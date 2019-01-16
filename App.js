@@ -64,7 +64,7 @@ class App extends Component {
                 console.log("APP resetRoundWin() ... winnerPlayer ",winnerPlayer)
 
                 newRoundWinCount = this.updateRoundWin(winnerPlayer, aux)
-                const winnerPlayerName = (winnerPlayer == 1) ? prevState.names.playerName1 :                                     prevState.names.playerName2
+                const winnerPlayerName = (winnerPlayer == 1) ? prevState.names.player1Name : prevState.names.player2Name
                 console.log("APP resetRoundWin() ... winnerPlayerName",winnerPlayerName)
                 const newRoundWin = prevState.game.roundWin
                 newRoundWin.push(winnerPlayerName)
