@@ -21,9 +21,11 @@ class Game extends Component {
         console.log("GAME roundMoves.length == 2 ?.... ",roundMoves.length)
         if(this._isMounted){
             console.log("GAME is mounted")
-            if( roundMoves.length == 2 )
+            if( roundMoves.length == 2 ){
                 this.props.resetRoundWin()
+            }
             else console.log("GAME ... Cannot calculate win yet")
+            this.props.checkIfEndGame()
         }
     }
 

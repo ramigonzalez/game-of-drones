@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import SetupGame from './SetupGame'
 import Game from './Game'
+import Score from './Score'
 
 class App extends Component {
 
@@ -8,6 +9,7 @@ class App extends Component {
         super()
         this.state = {
             gameStarted : false,
+            existWinner : false,
             winnerPlayer : "",
             names: {playerName1 : "",
                     playerName2 : ""},
@@ -24,6 +26,7 @@ class App extends Component {
         this.getWinner = this.getWinner.bind(this)
         this.updateRoundWin = this.updateRoundWin.bind(this)
         this.resetRoundWin = this.resetRoundWin.bind(this)
+        this.checkIfEndGame = this.checkIfEndGame.bind(this)
     }
 
     savePlayersNames(data){
@@ -58,41 +61,33 @@ class App extends Component {
         this.setState(prevState => {
             const winnerPlayer = this.getWinner(prevState.game.roundMoves)
             let newRoundWinCount;
+            let winnerPlayerName;
             if(winnerPlayer == 1 || winnerPlayer == 2){
+
                 const aux = prevState.game.roundWinCount
                 console.log("APP resetRoundWin() ... prevState.game.roundWinCount ",aux)
                 console.log("APP resetRoundWin() ... winnerPlayer ",winnerPlayer)
 
                 newRoundWinCount = this.updateRoundWin(winnerPlayer, aux)
-                const winnerPlayerName = (winnerPlayer == 1) ? prevState.names.player1Name : prevState.names.player2Name
+                winnerPlayerName = (winnerPlayer == 1) ? prevState.names.player1Name :                                     prevState.names.player2Name
                 console.log("APP resetRoundWin() ... winnerPlayerName",winnerPlayerName)
-                const newRoundWin = prevState.game.roundWin
-                newRoundWin.push(winnerPlayerName)
-                return{
-                    game: {
-                            roundMoves : [],
-                            player1Moves : false,
-                            roundNumber : prevState.game.roundNumber + 1,
-                            roundWinCount : newRoundWinCount,
-                            roundWin : newRoundWin
-                    }
-                }
+            }else{
+                winnerPlayerName = "Draw"
+                newRoundWinCount = prevState.game.roundWinCount
             }
-            else{
-                console.log("APP resetRoundWin() .... IS A DRAW ....")
-                return{
-                    game: {
-                            roundMoves : [],
-                            player1Moves : false,
-                            roundNumber : prevState.game.roundNumber + 1,
-                            roundWinCount : prevState.game.roundWinCount,
-                            roundWin : prevState.game.roundWin
-                    }
+            const newRoundWin = prevState.game.roundWin
+            newRoundWin.push(winnerPlayerName)
+            return{
+                game: {
+                        roundMoves : [],
+                        player1Moves : false,
+                        roundNumber : prevState.game.roundNumber + 1,
+                        roundWinCount : newRoundWinCount,
+                        roundWin : newRoundWin
                 }
             }
         })
         console.log("APP resetRoundWin() ... FINISH")
-
     }
 
     getWinner(newRoundResult_){
@@ -143,21 +138,79 @@ class App extends Component {
         console.log("APP componentWillUnmount() ... ")
     }
 
+    checkIfEndGame(){
+        console.log("APP checkIfEndGame() ... START")
+        const roundWinCount = this.state.game.roundWinCount
+        console.log("APP checkIfEndGame() ... roundWinCount ", roundWinCount)
+
+        const p1_wins = roundWinCount[0]
+        const p2_wins = roundWinCount[1]
+
+        let existWinner = false;
+        if(p1_wins == 3 || p2_wins == 3)
+            existWinner = true
+
+        if(existWinner)
+        {
+            this.setState(prevState => {
+                const roundWinCount_ = prevState.game.roundWinCount
+                console.log(roundWinCount_)
+                const p1_wins = roundWinCount_[0]
+                let winnerPlayerName;
+                if(p1_wins == 3)
+                    winnerPlayerName = prevState.names.player1Name
+                else
+                    winnerPlayerName = prevState.names.player2Name
+
+                return {
+                    gameStarted : false,
+                    existWinner : true,
+                    winnerPlayer : winnerPlayerName,
+                    names: {
+                        playerName1 : "",
+                        playerName2 : ""
+                    },
+                    game: {
+                        roundNumber : 1,
+                        player1Moves : false,
+                        roundWinCount : [0,0],
+                        roundMoves : [],
+                        roundWin : []
+                    }
+                }
+            })
+        }
+
+        console.log("APP checkIfEndGame() ... FINISH")
+    }
+
     render() {
         console.log("APP render() .... ",this.state)
         return (
             <div className="main">
                 <h1 >Game of Drones</h1>
                 <hr />
-                {!this.state.gameStarted ?
-                    <SetupGame savePlayersNames={this.savePlayersNames}/>
-                    :
-                    <Game
-                        state={this.state}
-                        onSubmitMove={this.onSubmitMove.bind(this)}
-                        resetRoundWin={this.resetRoundWin}
-                    />
-                }
+                {!this.state.existWinner ?
+                    <div>
+                        {!this.state.gameStarted ?
+                            <SetupGame savePlayersNames={this.savePlayersNames}/>
+                            :
+                            <div>
+                                <Game
+                                    state={this.state}
+                                    onSubmitMove={this.onSubmitMove.bind(this)}
+                                    resetRoundWin={this.resetRoundWin}
+                                    checkIfEndGame={this.checkIfEndGame}
+                                />
+                                <Score  state={this.state}/>
+                            </div>
+                        }
+                    </div>
+                :
+                <div>
+                <h1> THE PLAYER {this.state.winnerPlayer} IS THE NEW EMPEROR </h1>
+                </div>
+              }
             </div>
         );
     }
